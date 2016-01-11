@@ -1,0 +1,31 @@
+PROPOSAL META_DATA VERSION 1
+
+# Who prepared this proposal, which organisation? NULL is only acceptable for
+# this 'genesis' member list. In general this is the SHA256 of the
+# current member list
+TEAM NULL
+
+# The proposal can supersede other older ones
+# it is advisable to describe them adequately so the chance of someone sneaking in
+# invalidations is small
+SUPERSEDES
+# <proposal-sha256>
+END
+
+
+# List elections to be confirmed here. Elections are set of votes on a common proposal.
+# Idea here: Cited elections become 'official' vote counts.
+CONFIRMS
+  # election SHA256
+END
+
+# what options are on the ballot?
+BALLOT_OPTIONS
+  FOR AGAINST
+END
+
+# how is this accepted/rejected?
+# A list of validation methods that must all be true.
+VALIDATION_METHODS
+  SIMPLE_MAJORITY
+END

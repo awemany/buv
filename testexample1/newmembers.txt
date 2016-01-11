@@ -1,0 +1,7 @@
+META c31f0b17f738aa5eeccc8bb03e9cdc61613570b66aba4d8237595902dbd16517 MEMBER_LIST VERSION 1
+# Full new member list
+alice   12qeUAwuR8XjXRisS1PpJp7BW3RDxGWZqN
+bob     12S88cuMiUA7JdGsHTbKsXezUFzE2nNjFt
+charlie 15sfPYhpNYQgwKWf5QT9Bn2ke7MkoMqZvV
+debbie  1J6fwesmVyGCihAJWY1T33MGBCsTFErYoJ
+eddie   1HiDAXeoggsrf6zAJLCGRFHoq5cwbPkQz7

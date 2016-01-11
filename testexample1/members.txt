@@ -1,0 +1,5 @@
+META b63f9f3dab9287ad63c20c38438cfb3d8d9d739808d1a96a857e50cd211dd06d MEMBER_LIST VERSION 1
+# List of founding members
+alice   12qeUAwuR8XjXRisS1PpJp7BW3RDxGWZqN
+bob     12S88cuMiUA7JdGsHTbKsXezUFzE2nNjFt
+charlie 15sfPYhpNYQgwKWf5QT9Bn2ke7MkoMqZvV
