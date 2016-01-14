@@ -11,16 +11,6 @@ def drop_keys(keys):
     for k in keys:
         del data.all_data[k]
         
-def drop_votes_with_invalid_signature():
-    """ Drop all votes that have invalid signatures. """
-    drop=[]
-    for k, item in data_iter(Vote):
-        vote=item
-        if not vote.valid:
-            logging.warn("Dropping vote with invalid signature:"+repr(vote))
-            drop.append(k)
-    drop_keys(drop)
-    
 def ref_all_and_drop_missing():
     """Solve has reference objects in all_data and
     drop those that have missing references."""
@@ -31,7 +21,7 @@ def ref_all_and_drop_missing():
         dropped_something=False
         take={}
         for key, val in data.all_data.iteritems():
-            result=val.do_complete(data.all_data, fresh=True)
+            result=val.do_complete(data.all_data)
             if result:
                 logging.warn("For "+key+", "+str(val))
                 logging.warn(result)
@@ -61,7 +51,7 @@ def drop_non_eligible_votes():
     drop=[]
 
     for k, vote in data_iter(Vote):
-        team=vote.proposal.meta.team
+        team=vote.proposal_meta.team
         if team==None:
             # A 'genesis member list' is expected
             if not isinstance(vote.proposal, MemberDict):

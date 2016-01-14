@@ -1,0 +1,11 @@
+{
+    "type" : "MemberDict",
+    "version" : 1,
+    "member_map" : {
+	"alice"   : "<bitcoin-address:alice>",
+	"bob"     : "<bitcoin-address:bob>",
+	"charlie" : "<bitcoin-address:charlie>",
+	"debbie"  : "<bitcoin-address:debbie>",
+	"eddie"   : "<bitcoin-address:eddie>"
+  }
+}

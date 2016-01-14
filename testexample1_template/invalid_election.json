@@ -1,0 +1,11 @@
+{
+    "type" : "Election",
+    "version" : 1,
+    "proposal" : "<hash-of:testexample1/buip1.txt>",
+    # just some random invalid hashes of invalid votes here,
+    "votes" : [
+	"ba95790287d0e9c56c70488a81de52348916975362d4857e62d19bde12a38063",
+	"ca95790287d0e8c56c70488a81de52348916975362d4857e62d19bde12a38064",
+	"aa95790287d0e8c56c70488a81de52348916975362d4857e62d19bde12a38064"
+    ]
+}

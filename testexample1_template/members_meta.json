@@ -1,0 +1,25 @@
+{
+    "type" : "ProposalMetadata",
+    "version" : 1,
+
+    # Who prepared this proposal, which organisation? NULL is only acceptable for
+    # this 'genesis' member list. In general this is the SHA256 of the
+    # current member list
+    "team"    : null,
+    
+    # The proposal can supersede other older ones when voted on
+    # it is advisable to describe them adequately so the chance of someone sneaking in
+    # invalidations is small
+    "supersedes" : [],
+
+    # List elections to be confirmed here. Elections are set of votes on a common proposal.
+    # Idea here: Cited elections become 'official' vote counts.
+    "confirms" : [],
+
+    # what options are on the ballot?
+    "ballot_options" : ["FOR", "AGAINST"],
+
+    # how is the proposal accepted/rejected?
+    # A list of validation methods that must all be true.
+    "validation_methods": ["SIMPLE_MAJORITY"]
+}

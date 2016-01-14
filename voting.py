@@ -14,25 +14,25 @@ tallies=defaultdict(lambda : Counter())
 def collect_votes():
     """ Collect all votes for all proposals. """
     for k, vote in data_iter(Vote):
-        proposal_vote_map[vote.proposal][vote.addr].append(vote.ballot_option)
+        proposal_vote_map[(vote.proposal, vote.proposal_meta)][vote.addr].append(vote.ballot_option)
 
 
 # calculate tallies for all votes of all proposals
 def tally_all():
-    for proposal, addr_bo_map in proposal_vote_map.iteritems():
+    for p, addr_bo_map in proposal_vote_map.iteritems():
+        proposal, meta = p
         for addr, vals in addr_bo_map.iteritems():
             if len(vals)>1:
                 logging.warning("Address %s votes at"+
                                 " least twice for proposal %s." % (addr, proposal))
                 logging.warning("Counting as 'invalid'.")
-                tallies[proposal]["-invalid"]+=1
+                tallies[(proposal, meta)]["-invalid"]+=1
             else:
-                tallies[proposal][vals[0]]+=1
+                tallies[(proposal, meta)][vals[0]]+=1
                 
 
-def vres_simple_majority(tally, proposal):
+def vres_simple_majority(tally, proposal, meta):
     """ Result is simple maximum of votes. """
-    meta=proposal.meta
     for bo, counts in tally.most_common():
         if bo not in meta.ballot_options:
             logging.warning("Ignoring votes for invalid ballot option "+bo)
@@ -47,10 +47,10 @@ def vres_simple_majority(tally, proposal):
         
     return False, "-undecided"
 
-def vres_at_least_half_voting(tally, proposal):
+def vres_at_least_half_voting(tally, proposal, meta):
     numvotes=sum(x for x in tally.itervalues())
     # FIXME: some checks missing...
-    return numvotes >= int(float(len(proposal.meta.team))/2.+.5), None
+    return numvotes >= int(float(len(meta.team))/2.+.5), None
 
 validation_methods={
     "SIMPLE_MAJORITY" : vres_simple_majority,
@@ -59,12 +59,12 @@ validation_methods={
 
 def print_results():
     """ Print voting results for all proposals. """
-    for proposal, tally in tallies.iteritems():
-        meta=proposal.meta
+    for p, tally in tallies.iteritems():
+        proposal, meta=p
         result=""
         for vm in meta.validation_methods:
             validator=validation_methods[vm]
-            valid, res=validator(tally, proposal)
+            valid, res=validator(tally, proposal, meta)
             if res!=None:
                 if result!="":
                     log.warning("Conflicting results for validation!!")

@@ -1,0 +1,14 @@
+# comprehensive results of an election
+# signing off (through meta data) on an election means accepting its results
+# applies recursively
+{
+    "type" : "Election",
+    "version" : 1,
+    "proposal" : "<hash-of:testexample1/buip1.txt>",
+    "proposal_meta" : "<hash-of:testexample1/buip1_meta.json>",
+    "votes" : [
+	"<hash-of:testexample1/alice_against_buip1_vote.json>",
+	"<hash-of:testexample1/bob_for_buip1_vote.json>",
+	"<hash-of:testexample1/charlie_against_buip1_vote.json>"
+    ]
+}

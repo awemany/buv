@@ -1,0 +1,9 @@
+{
+    "type"              : "ProposalMetadata",
+    "version"           : 1,
+    "team"              : "<hash-of:testexample1/members.json>",
+    "supersedes"        : ["<hash-of:testexample1/members.json>"],
+    "confirms"          : ["<hash-of:testexample1/buip1_election.json>"],
+    "ballot_options"    : ["FOR", "AGAINST"],
+    "validation_methods": ["SIMPLE_MAJORITY"]
+}

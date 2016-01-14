@@ -1,0 +1,10 @@
+{
+    "type"               : "Vote",
+    "version"            : 1,
+    "handle"             : "bob",
+    "addr"               : "<bitcoin-address:bob>",
+    "ballot_option"      : "FOR",
+    "proposal"           : "<hash-of:testexample1/members.json>",
+    "proposal_meta"      : "<hash-of:testexample1/members_meta.json>",
+    "signature"          : "<signature:bob>"
+}

@@ -1,0 +1,10 @@
+{
+    "type"               : "Vote",
+    "version"            : 1,
+    "handle"             : "alice",
+    "addr"               : "<bitcoin-address:alice>",
+    "ballot_option"      : "FOR",
+    "proposal"           : "<hash-of:testexample1/newmembers.json>",
+    "proposal_meta"      : "<hash-of:testexample1/newmembers_meta.json>",
+    "signature"          : "<signature:alice>"
+}

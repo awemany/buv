@@ -1,0 +1,10 @@
+{
+    "type"               : "Vote",
+    "version"            : 1,
+    "handle"             : "charlie",
+    "addr"               : "<bitcoin-address:charlie>",
+    "ballot_option"      : "AGAINST",
+    "proposal"           : "<hash-of:testexample1/buip1.txt>",
+    "proposal_meta"      : "<hash-of:testexample1/buip1_meta.json>",
+    "signature"          : "<signature:charlie>"
+}
