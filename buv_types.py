@@ -6,7 +6,7 @@ import os.path
 import jsoncomment
 from StringIO import StringIO
 from templates import templateReplace
-
+from collections import Counter
 json=jsoncomment.JsonComment(json)
 
 def matches_regexp(s, exp, inval_str):
@@ -29,6 +29,7 @@ def valid_sha256_hash(s):
 
 
 def Jutf8(J):
+    """ Encode JSON struct/dict with unicode strings in it to UTF-8. """
     if isinstance(J, unicode):
         return J.encode("utf-8")
     elif isinstance(J, list):
@@ -97,7 +98,6 @@ class BUVType(object):
                 else:
                     l.append(None)
             self.__setattr__(hlr, l)
-            
         return False
     
 class Vote(BUVType):
@@ -138,7 +138,7 @@ class Vote(BUVType):
 
         self.addHashRef("proposal")
         self.addHashRef("proposal_meta")
-        
+
     def votestr(self):
         """ Returns the actual string to be voted on. """
         return "VOTE-FORMAT-VERSION-1 %s %s %s %s %s" % (
@@ -150,16 +150,14 @@ class Vote(BUVType):
         )
     
     def asJSON(self):
-        return json.dumps({"type" : "Vote",
-                           "version" : 1,
-                           "handle" : self.handle,
-                           "addr" : self.addr,
-                           "signature" : self.signature,
-                           "ballot_option" : self.ballot_option,
-                           "proposal" : self.proposal_hash,
-                           "proposal_meta" : self.proposal_meta_hash},
-                          encoding='utf-8',
-                          ensure_ascii=True)
+        return {"type" : "Vote",
+                "version" : 1,
+                "handle" : self.handle,
+                "addr" : self.addr,
+                "signature" : self.signature,
+                "ballot_option" : self.ballot_option,
+                "proposal" : self.proposal_hash,
+                "proposal_meta" : self.proposal_meta_hash}
 
     @staticmethod
     def fromJSON(s, file_name, template_replace=False):
@@ -189,18 +187,20 @@ class Election(BUVType):
         self.addHashRef("proposal")
         self.addHashRef("proposal_meta")
         self.addHashlistRef("vote")
+
+        # filled during validation
+        self.result=None
         
     def __hash__(self):
         return int(self.sha256[:8], 16)
 
     def asJSON(self):
-        return json.dumps({"type" : "Election",
-                           "version" : 1,
-                           "votes" : self.vote_hashes,
-                           "proposal" : self.proposal_hash,
-                           "proposal_meta" : self.proposal_hash},
-                          encoding='utf-8',
-                          ensure_ascii=True)
+        return {"type" : "Election",
+                "version" : 1,
+                "votes" : self.vote_hashes,
+                "proposal" : self.proposal_hash,
+                "proposal_meta" : self.proposal_meta_hash}
+    
     @staticmethod
     def fromJSON(s, file_name, template_replace=False):
         J=JSON_deser_type_and_ver_check(s, "Election", 1)
@@ -214,33 +214,49 @@ class Election(BUVType):
     
 class ProposalMetadata(BUVType):
     def __init__(self,
+                 title,
+                 proposal_hash,
                  team_hash,
                  supersede_hashes,
                  confirm_hashes,
                  ballot_options,
-                 validation_methods,
+                 voting_methods,
                  file_name):
         BUVType.__init__(self, file_name)
+        self.title=title
+        self.proposal_hash=proposal_hash
         self.team_hash=team_hash
         self.supersede_hashes=supersede_hashes
         self.confirm_hashes=confirm_hashes
         self.ballot_options=ballot_options
-        self.validation_methods=validation_methods
+        self.voting_methods=voting_methods
         self.file_name=file_name
+        self.addHashRef("proposal")
         self.addHashRef("team")
         self.addHashlistRef("supersede")
         self.addHashlistRef("confirm")
 
+        # filled during validation of votes
+        self.backref_votes=[]
+        
+        # map ballot option to vote counts
+        self.preliminary_tally=Counter()
+
+        # filled for a processed election
+        self.election=None
+                              
+
+
     def asJSON(self):
-        return json.dumps({"type" : "ProposalMetadata",
-                           "version" : 1,
-                           "team" : self.team_hash,
-                           "supersedes" : self.supersede_hashes,
-                           "confirms" : self.confirm_hashes,
-                           "ballot_options" : self.ballot_options,
-                           "validation_methods" : self.validation_methods},
-                          encoding='utf-8',
-                          ensure_ascii=True)
+        return {"type" : "ProposalMetadata",
+                "title" : self.title,
+                "version" : 1,
+                "proposal" : self.proposal_hash,
+                "team" : self.team_hash,
+                "supersedes" : self.supersede_hashes,
+                "confirms" : self.confirm_hashes,
+                "ballot_options" : self.ballot_options,
+                "voting_methods" : self.voting_methods}
                           
     @staticmethod
     def fromJSON(s, file_name, template_replace=False):
@@ -248,15 +264,20 @@ class ProposalMetadata(BUVType):
         if template_replace:
             J=templateReplace(J, J)
         return ProposalMetadata(
+                 title               =J["title"],
+                 proposal_hash       =J["proposal"],
                  team_hash           =J["team"],
                  supersede_hashes    =J["supersedes"],
                  confirm_hashes      =J["confirms"],
                  ballot_options      =J["ballot_options"],
-                 validation_methods  =J["validation_methods"],
+                 voting_methods      =J["voting_methods"],
                  file_name           =file_name)
             
-    
-class ProposalText(BUVType):
+
+class Proposal(object):
+    pass
+
+class ProposalText(BUVType, Proposal):
     def __init__(self,
                  fulltext,
                  file_name):
@@ -264,11 +285,9 @@ class ProposalText(BUVType):
         self.fulltext=fulltext
 
     def asJSON(self):
-        return json.dumps({"type" : "ProposalText",
-                           "version" : 1,
-                           "fulltext" : self.fulltext},
-                          encoding='utf-8',
-                          ensure_ascii=True)
+        return {"type" : "ProposalText",
+                "version" : 1,
+                "fulltext" : self.fulltext}
         
     @staticmethod
     def fromJSON(s, file_name, template_replace=False):
@@ -282,20 +301,20 @@ class ProposalText(BUVType):
     def fromJSONtmpl(s, file_name):
         return fromJSON(s, file_name)
     
-class MemberDict(BUVType, dict):
+class MemberDict(BUVType, Proposal, dict):
     def __init__(self, member_map, file_name):
         BUVType.__init__(self, file_name)
         dict.__init__(self, member_map)
+
         
     def __hash__(self):
         return int(self.sha256[:8], 16)
 
     def asJSON(self):
-        return json.dumps({"type" : "MemberDict",
-                           "version" : 1,
-                           "member_map" : dict(self)},
-                           encoding='utf-8',
-                           ensure_ascii=True)
+        return {"type" : "MemberDict",
+                "version" : 1,
+                "member_map" : dict(self)}
+
 
     @staticmethod
     def fromJSON(s, file_name, template_replace=False):

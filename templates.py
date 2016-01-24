@@ -70,7 +70,7 @@ def fillTestTemplate(args):
     if is_json:
         try:
             obj=buv_types.constructJSON[J["type"]](s, args.input, True)
-            obj_str=obj.asJSON()
+            obj_str=json.dumps(obj.asJSON(), encoding='utf-8', ensure_ascii=True)
         except buv_types.InvalidSignatureError:
             logging.info("Invalid signature, copying as is.")
             obj_str=s

@@ -1,0 +1,22 @@
+body {
+    font-family : "Veranda";
+    font-size : 12px;
+}
+
+.ballot_option {
+    display : inline;
+    color : #ff0000;
+    /* font-size : 20px; */
+}
+
+.member_handle {
+    display : inline;
+    color : #008000;
+    /* font-size : 20px; */
+}
+
+.bitcoin_addr {
+    display : inline;
+    color : #0000ff;
+    /* font-size : 20px; */
+}

@@ -1,0 +1,17 @@
+{
+    "files" : ["members.json",
+	       "members_meta.json",
+	       "alice_founding_vote.json",
+	       "bob_founding_vote.json",
+	       "buip1.txt",
+	       "buip1_meta.json",
+	       "bob_for_buip1_vote.json",
+	       "charlie_against_buip1_vote.json",
+	       "alice_against_buip1_vote.json",
+	       "buip1_election.json",
+	       "newmembers.json",
+	       "newmembers_meta.json",
+	       "alice_for_newmembers_vote.json",
+	       "charlie_for_newmembers_vote.json"
+	      ]
+}

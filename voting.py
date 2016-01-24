@@ -2,79 +2,112 @@ import logging
 from collections import Counter, defaultdict
 from buv_types import ProposalText, Vote, MemberDict, Election
 from preprocess import data_iter
+from errors import ValidationError
 
-# map proposals to maps of addr -> (list of ballot-options)
-proposal_vote_map=defaultdict(lambda : defaultdict(lambda: []))
+# FIXME: Reimplement: mark conflicting votes as invalid!
 
-# tallies for all proposals
-# invalid votes (two or more votes per proposal) are in the
-# '-invalid' bin
-tallies=defaultdict(lambda : Counter())
-
-def collect_votes():
-    """ Collect all votes for all proposals. """
-    for k, vote in data_iter(Vote):
-        proposal_vote_map[(vote.proposal, vote.proposal_meta)][vote.addr].append(vote.ballot_option)
-
-
-# calculate tallies for all votes of all proposals
-def tally_all():
-    for p, addr_bo_map in proposal_vote_map.iteritems():
-        proposal, meta = p
-        for addr, vals in addr_bo_map.iteritems():
-            if len(vals)>1:
-                logging.warning("Address %s votes at"+
-                                " least twice for proposal %s." % (addr, proposal))
-                logging.warning("Counting as 'invalid'.")
-                tallies[(proposal, meta)]["-invalid"]+=1
-            else:
-                tallies[(proposal, meta)][vals[0]]+=1
-                
-
-def vres_simple_majority(tally, proposal, meta):
+def vm_simple_majority(election, result):
     """ Result is simple maximum of votes. """
-    for bo, counts in tally.most_common():
-        if bo not in meta.ballot_options:
-            logging.warning("Ignoring votes for invalid ballot option "+bo)
-        else:
-            if meta.team!=None:
-                l=len(meta.team)
-            else:
-                l=len(proposal)
-            return (True,
-                    "SIMPLE_MAJORITY: %s with %d out of %d possible votes" %
-                    (bo, counts, l))
+    t=tally(election.vote)
+
+    mc=t.most_common()
+    winner=not len(mc)>1 or mc[0][1]!=mc[1][1]
+
+    win_option=mc[0][0] if winner else "-tie"
+
+    if winner:
+        comments=["Simple majority, %d out of %d voted '%s'." %
+                  (mc[0][1], len(election.proposal_meta.team),
+                   win_option)]
+    else:
+        comments=[]
         
-    return False, "-undecided"
+    er=ElectionResult(
+        winner,
+        win_option,
+        comments)
 
-def vres_at_least_half_voting(tally, proposal, meta):
-    numvotes=sum(x for x in tally.itervalues())
-    # FIXME: some checks missing...
-    return numvotes >= int(float(len(meta.team))/2.+.5), None
+    return result.merge(er)
 
-validation_methods={
-    "SIMPLE_MAJORITY" : vres_simple_majority,
-    "AT_LEAST_HALF_VOTING" : vres_at_least_half_voting
+def vm_at_least_half_voting(election, result):
+    election_size=len(election.vote)
+    team_size=len(election.proposal_meta.team)
+    odd_team_size=team_size % 2
+
+    if odd_team_size:
+        valid=election_size>team_size/2
+    else:
+        valid=election_size>=team_size/2
+
+    if valid:
+        comment=("At least half of members are voting (%d out of %d)"
+                  % (election_size, team_size))
+    else:
+        comment=("Less than half of members are voting (%d out of %d)"
+                  % (election_size, team_size))
+        
+    er=ElectionResult(
+        valid,
+        "",
+        [comment]
+    )
+    return result.merge(er)
+
+# validation methods defined so far
+voting_methods={
+    "SIMPLE_MAJORITY"      : vm_simple_majority,
+    "AT_LEAST_HALF_VOTING" : vm_at_least_half_voting
 }
 
-def print_results():
-    """ Print voting results for all proposals. """
-    for p, tally in tallies.iteritems():
-        proposal, meta=p
-        result=""
-        for vm in meta.validation_methods:
-            validator=validation_methods[vm]
-            valid, res=validator(tally, proposal, meta)
-            if res!=None:
-                if result!="":
-                    log.warning("Conflicting results for validation!!")
-                    result="-broken"
-                result=res
-                
-            if not valid:
-                result="-undecided"
-
-        print "result", proposal.file_name, result
-            
+class ElectionResult(object):
+    def __init__(self, valid, voted_option, comments):
+        self.valid=valid
+        self.voted_option=voted_option
+        self.comments=comments
         
-    
+    def merge(self, er):
+        """ Merge result of another validation method. """
+        valid=self.valid and er.valid
+        if self.voted_option!="" and er.voted_option!="":
+            raise ValidationError("Election with conflicting results.")
+        voted_option=self.voted_option+er.voted_option
+        comments=self.comments+er.comments
+        return ElectionResult(valid, voted_option, comments)
+        
+        
+        
+
+def tally(votes):
+    """ Tally a set of votes for a common proposal.
+    All data is assumed to be sufficiently validated. """
+    c=Counter()
+    for vote in votes:
+        c[vote.ballot_option]+=1
+    return c
+
+
+def calcPreliminaryResult(pmd):
+    """ Calculate preliminary result given by back-referenced votes on
+    for a ProposalMetadata."""
+    pmd.preliminary_tally=tally(pmd.backref_votes)
+    logging.info("Preliminary tally for %s: %s" % (pmd.proposal.file_name, pmd.preliminary_tally))
+
+def fillElectionResult(election):
+    if election.proposal_meta.election!=None:
+        raise ValidationError("There is already an election for this proposal (meta data).")
+    else:
+        election.proposal_meta.election=election
+        
+    result=ElectionResult(True, "", [])
+    pm=election.proposal_meta
+    for vm in pm.voting_methods:
+        if vm not in voting_methods:
+            raise ValidationError("Unknown voting method %s." % vm)
+        result=voting_methods[vm](election, result)
+        
+    election.result=result
+    logging.info("Election result for election %s" % election)
+    logging.info("On proposal "+election.proposal.file_name)
+    logging.info("Election is valid:"+str(result.valid))
+    logging.info("Elected option:"+result.voted_option)
+    logging.info("Comments:"+str(result.comments))

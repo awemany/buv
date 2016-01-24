@@ -13,12 +13,16 @@ from data import readFile
 import data
 import glob
 from templates import registerFillTemplates
-from validate import registerValidate
+from check import registerCheck
+from web import registerWebserver
+from sign import registerSign
 
 parser = argparse.ArgumentParser(description="Bitcoin Unlimited Voting")
 subparsers = parser.add_subparsers()
 registerFillTemplates(subparsers)
-registerValidate(subparsers)
+registerCheck(subparsers)
+registerWebserver(subparsers)
+registerSign(subparsers)
 
 args   = parser.parse_args()
 args.func(args)

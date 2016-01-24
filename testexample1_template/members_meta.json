@@ -1,5 +1,7 @@
 {
     "type" : "ProposalMetadata",
+    "title" : "Original member list",
+    "proposal" : "<hash-of:testexample1/members.json>",
     "version" : 1,
 
     # Who prepared this proposal, which organisation? NULL is only acceptable for
@@ -20,6 +22,6 @@
     "ballot_options" : ["FOR", "AGAINST"],
 
     # how is the proposal accepted/rejected?
-    # A list of validation methods that must all be true.
-    "validation_methods": ["SIMPLE_MAJORITY"]
+    # A list of voting (validation, counting) methods. All of them must succeed.
+    "voting_methods": ["SIMPLE_MAJORITY"]
 }

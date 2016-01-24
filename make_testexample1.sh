@@ -18,5 +18,6 @@ for FN in $D/members.json \
     ./buv fill-template $FN $OD${FN#$D}
 done
 	      
-		  
+cp $D/filelist.json $OD
+
 	      

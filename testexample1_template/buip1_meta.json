@@ -1,9 +1,11 @@
 {
     "type" : "ProposalMetadata",
+    "title" : "BUIP1",
+    "proposal" : "<hash-of:testexample1/buip1.txt>",
     "team" : "<hash-of:testexample1/members.json>",
     "version" : 1,
     "supersedes" : [],
     "confirms" : [],
     "ballot_options" : ["FOR", "AGAINST"],
-    "validation_methods" : ["SIMPLE_MAJORITY", "AT_LEAST_HALF_VOTING"]
+    "voting_methods" : ["SIMPLE_MAJORITY", "AT_LEAST_HALF_VOTING"]
 }
