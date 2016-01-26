@@ -1,4 +1,4 @@
-import pybitcointools
+import bitcoin
 import re
 import shlex
 import json
@@ -62,7 +62,7 @@ class BUVType(object):
 
         self.file_name=file_name
         if self.file_name:
-            self.sha256=pybitcointools.sha256(open(file_name).read())
+            self.sha256=bitcoin.sha256(open(file_name).read())
 
         self.hash_refs=[]
         self.hashlist_refs=[]
@@ -124,16 +124,9 @@ class Vote(BUVType):
         self.addr=addr
         self.signature=signature
         
-        self.pubkey=pybitcointools.ecdsa_recover(self.votestr(),
-                                                 self.signature)
-
-        if pybitcointools.pubtoaddr(self.pubkey) != self.addr:
-            raise InvalidSignatureError, "Invalid signature (invalid pubkey)."
-
-        if not pybitcointools.ecdsa_verify(
-                self.votestr(),
-                self.signature,
-                self.pubkey):
+        if not bitcoin.ecdsa_verify_addr(self.votestr(),
+                                         self.signature,
+                                         self.addr):
             raise InvalidSignatureError, "Invalid signature."
 
         self.addHashRef("proposal")

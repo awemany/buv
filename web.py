@@ -2,7 +2,7 @@ import logging
 import os.path
 import json
 import re
-import pybitcointools
+import bitcoin
 import data
 from bottle import route, HTTPError, static_file, abort, template, request
 import bottle
@@ -160,7 +160,7 @@ def serve_submit_vote():
         "signature" : signature
     }
     js=json_pretty(j)
-    sha256=pybitcointools.sha256(js)
+    sha256=bitcoin.sha256(js)
     outf="incoming/%s-vote.json" % sha256
     with open(outf, "w") as f:
         f.write(js)

@@ -1,5 +1,5 @@
 import logging
-import pybitcointools
+import bitcoin
 import re
 import json
 import jsoncomment
@@ -12,15 +12,15 @@ def templateReplaceOne(s, Jorig):
     # FIXME: This is kind of ugly code..
     match=re.match(r"\<bitcoin-address\:([a-z]+)\>", s)
     if match:
-        res=pybitcointools.privtoaddr(
-            pybitcointools.sha256(match.group(1)))
+        res=bitcoin.privtoaddr(
+            bitcoin.sha256(match.group(1)))
         #logging.info("Replace %s with %s" % (match.group(0), res))
         return res
     
     match=re.match(r"\<hash-of\:([^>]+)\>", s)
     if match:
         fn=match.group(1)
-        res=pybitcointools.sha256(open(fn).read())
+        res=bitcoin.sha256(open(fn).read())
         #logging.info("Replace %s with %s" % (match.group(0), res))
         return res
 
@@ -34,8 +34,8 @@ def templateReplaceOne(s, Jorig):
             templateReplaceOne(Jorig["proposal"], Jorig),
             templateReplaceOne(Jorig["proposal_meta"], Jorig)
         )
-        privkey=pybitcointools.sha256(match.group(1))
-        res=pybitcointools.ecdsa_sign(msg, privkey)
+        privkey=bitcoin.sha256(match.group(1))
+        res=bitcoin.ecdsa_sign(msg, privkey)
         #logging.info("Replace %s with %s" % (match.group(0), res))
         return res
     else:
